@@ -19,6 +19,7 @@
             <br>
             <label for="phone">Phone Number:</label>
             <input type="tel" id="phone" name="phone" required>
+            <input type="hidden" id="userId" name="userId"> <!-- Hidden input to store user ID -->
             <br>
             <button type="submit">Submit</button>
         </form>
@@ -32,6 +33,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('appointmentForm');
             const appointmentList = document.getElementById('appointmentList');
+            const userIdInput = document.getElementById('userId');
 
             async function fetchAndDisplayAppointments() {
                 try {
@@ -42,12 +44,16 @@
                     appointments.forEach(appointment => {
                         const listItem = document.createElement('li');
                         listItem.innerHTML = `Name: ${appointment.name}, Email: ${appointment.email}, Phone: ${appointment.phone} 
-                        <button data-id="${appointment._id}" class="deleteBtn">Delete</button>`;
+                        <button data-id="${appointment._id}" class="deleteBtn">Delete</button>
+                        <button data-id="${appointment._id}" class="editBtn">Edit</button>`;
 
                         appointmentList.appendChild(listItem);
 
                         const deleteButton = listItem.querySelector('.deleteBtn');
                         deleteButton.addEventListener('click', () => deleteAppointment(appointment._id));
+
+                        const editButton = listItem.querySelector('.editBtn');
+                        editButton.addEventListener('click', () => editAppointment(appointment));
                     });
                 } catch (error) {
                     console.error('Error fetching appointments:', error);
@@ -64,7 +70,12 @@
                 }
             }
 
-            fetchAndDisplayAppointments();
+            function editAppointment(appointment) {
+                document.getElementById('name').value = appointment.name;
+                document.getElementById('email').value = appointment.email;
+                document.getElementById('phone').value = appointment.phone;
+                userIdInput.value = appointment._id;
+            }
 
             form.addEventListener('submit', async function (e) {
                 e.preventDefault();
@@ -72,6 +83,7 @@
                 const name = document.getElementById('name').value;
                 const email = document.getElementById('email').value;
                 const phone = document.getElementById('phone').value;
+                const userId = userIdInput.value; // Retrieve user ID from hidden input
 
                 const appointmentData = {
                     name,
@@ -80,13 +92,26 @@
                 };
 
                 try {
-                    const response = await axios.post('https://crudcrud.com/api/7b2694ba9a2e42a8a16e46837ac022f7/appointments', appointmentData);
-                    console.log('Appointment booked successfully:', response.data);
+                    if (userId) {
+                        // If there's a user ID, it's an edit
+                        await axios.put(`https://crudcrud.com/api/7b2694ba9a2e42a8a16e46837ac022f7/appointments/${userId}`, appointmentData);
+                        console.log('Appointment edited successfully:', userId);
+                    } else {
+                        // If there's no user ID, it's a new appointment
+                        const response = await axios.post('https://crudcrud.com/api/7b2694ba9a2e42a8a16e46837ac022f7/appointments', appointmentData);
+                        console.log('Appointment booked successfully:', response.data);
+                    }
+
+                    // Clear the form after submission
+                    form.reset();
+                    userIdInput.value = '';
                     fetchAndDisplayAppointments();
                 } catch (error) {
-                    console.error('Error booking appointment:', error);
+                    console.error('Error saving appointment:', error);
                 }
             });
+
+            fetchAndDisplayAppointments();
         });
     </script>
 </body>
