@@ -19,7 +19,7 @@
             <br>
             <label for="phone">Phone Number:</label>
             <input type="tel" id="phone" name="phone" required>
-            <input type="hidden" id="userId" name="userId"> <!-- Hidden input to store user ID -->
+            <input type="hidden" id="userId" name="userId">
             <br>
             <button type="submit">Submit</button>
         </form>
@@ -83,7 +83,7 @@
                 const name = document.getElementById('name').value;
                 const email = document.getElementById('email').value;
                 const phone = document.getElementById('phone').value;
-                const userId = userIdInput.value; // Retrieve user ID from hidden input
+                const userId = userIdInput.value; 
 
                 const appointmentData = {
                     name,
@@ -93,16 +93,13 @@
 
                 try {
                     if (userId) {
-                        // If there's a user ID, it's an edit
                         await axios.put(`https://crudcrud.com/api/7b2694ba9a2e42a8a16e46837ac022f7/appointments/${userId}`, appointmentData);
                         console.log('Appointment edited successfully:', userId);
                     } else {
-                        // If there's no user ID, it's a new appointment
                         const response = await axios.post('https://crudcrud.com/api/7b2694ba9a2e42a8a16e46837ac022f7/appointments', appointmentData);
                         console.log('Appointment booked successfully:', response.data);
                     }
 
-                    // Clear the form after submission
                     form.reset();
                     userIdInput.value = '';
                     fetchAndDisplayAppointments();
